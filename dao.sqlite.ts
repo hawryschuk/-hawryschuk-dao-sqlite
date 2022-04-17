@@ -4,11 +4,6 @@ import { Util } from '@hawryschuk/common';
 import { DAO, Model } from '@hawryschuk/dao';
 
 export class SQLiteDAO extends DAO {
-    static async getInstance(models, dbfile) {
-        const instance = new SQLiteDAO(models, dbfile);
-        await instance.ready$;
-        return instance;
-    }
     constructor(
         public models: any,
         public dbfile: string = './db2.sqlite',
@@ -64,25 +59,25 @@ export class SQLiteDAO extends DAO {
 
     async create<M extends Model>(klass: any, data: M): Promise<M> {
         const object = await super.create(klass, data);
-        const cols = this.columns[klass.name];
+        const cols = this.columns[this.className(klass)];
         const params = cols.map(col => col.name === 'json' ? JSON.stringify(object.POJO!(), null, 2) : object[col.name]);
-        const sql = `insert into ${klass.name} (${cols.map(col => col.name).join(', ')}) values (${cols.map(c => '?').join(', ')})`;
+        const sql = `insert into ${this.className(klass)} (${cols.map(col => col.name).join(', ')}) values (${cols.map(c => '?').join(', ')})`;
         await this.run(sql, params);
         return object;
     }
 
     async update<M extends Model>(klass: any, id: string, data: any): Promise<M> {
         const object: M = await super.update(klass, id, data);
-        const cols = this.columns[klass.name].filter(c => c.name !== 'id');
+        const cols = this.columns[this.className(klass)].filter(c => c.name !== 'id');
         const params = [...cols.map(col => col.name === 'json' ? JSON.stringify(object.POJO!(), null, 2) : object[col.name]), id];
-        const sql = `update ${klass.name} set ${cols.map(col => `${col.name}=?`).join(', ')} where id =? `;
+        const sql = `update ${this.className(klass)} set ${cols.map(col => `${col.name}=?`).join(', ')} where id =? `;
         await this.run(sql, params);
         return object;
     }
 
     async delete(klass: any, id: string, fromObject?: boolean) {
         const object = await super.delete(klass, id, fromObject, true);
-        await this.run(`delete from ${klass.name} where id = ? `, [id]);
+        await this.run(`delete from ${this.className(klass)} where id = ? `, [id]);
         return object;
     }
 
@@ -92,7 +87,7 @@ export class SQLiteDAO extends DAO {
             obj && await obj.ready$;
             return obj;
         };
-        const sql = id ? `select * from ${klass.name} where id = ? ` : `select * from ${klass.name}`;
+        const sql = id ? `select * from ${this.className(klass)} where id = ? ` : `select * from ${this.className(klass)}`;
         const models: { [id: string]: Model } = await this
             .query(sql, id && [id])
             .then(async (rows: any) => {
