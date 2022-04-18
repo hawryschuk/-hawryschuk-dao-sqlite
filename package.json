@@ -18,7 +18,7 @@
   },
   "scripts": {
     "start": "nodemon --ext js --exec ts-mocha *.spec.ts --timeout=15000",
-    "hawryschuk": "npm link @hawryschuk/common @hawryschuk/dao @hawryschuk/redaction",
+    "hawryschuk": "npm link @hawryschuk/common @hawryschuk/dao",
     "postinstall": "npm run hawryschuk",
     "test": "ts-mocha *.spec.ts --timeout 200000",
     "build": "npm run hawryschuk && tsc --outDir dist && hawryschuk --package-json"

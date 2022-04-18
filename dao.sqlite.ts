@@ -54,7 +54,7 @@ export class SQLiteDAO extends DAO {
 
     async reset() {
         await Promise.all(Object.keys(this.models).map(tableName => this.run(`delete from ${tableName}`)));
-        (this as DAO).cacheQuery = {};
+        (this as any).cacheQuery = {};
     }
 
     async create<M extends Model>(klass: any, data: M): Promise<M> {
