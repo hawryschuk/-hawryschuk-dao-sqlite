@@ -20,20 +20,17 @@ export class SQLiteDAO extends DAO {
     ready$ = Promise
         .resolve(1)
         .then(async () => {
-            console.log('getting ready...')
             for (const className of Object.keys(this.models)) {
                 await this.run(`create table if not exists ${className} (id text UNIQUE, json text not null)`);
                 const cols: { name: string; }[] = await this.query(`SELECT name FROM PRAGMA_TABLE_INFO('${className}')`);
                 this.columns[className] = cols;
             }
-            console.log('getting ready...')
         })
         .then(() => new Date);
 
     async run(sql: string, params?: string[]): Promise<any[]> {
         return await new Promise(async (resolve, reject) =>
             this.db.run(sql, params || [], (error) => {
-                console.log({ RUN: { sql, params, error } });
                 return error
                     ? reject(error)
                     : resolve(null)
@@ -44,7 +41,6 @@ export class SQLiteDAO extends DAO {
     async query(sql: string, params?: string[]): Promise<any[]> {
         return await new Promise(async (resolve, reject) =>
             this.db.all(sql, params || [], (error, results) => {
-                console.log({ QUERY: { sql, params, error, results } })
                 return error
                     ? reject(error)
                     : resolve(results)
